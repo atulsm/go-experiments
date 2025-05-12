@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"temp"
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
@@ -26,7 +27,9 @@ Otherwise, the `Stop()` method must be called to stop the Worker.
 func main() {
 	// Create a Temporal Client
 	// A Temporal Client is a heavyweight object that should be created just once per process.
-	temporalClient, err := client.Dial(client.Options{})
+	temporalClient, err := client.Dial(client.Options{
+		HostPort: client.DefaultHostPort,
+	})
 	if err != nil {
 		log.Fatalln("Unable to create client", err)
 	}
@@ -35,17 +38,17 @@ func main() {
 	yourWorker := worker.New(temporalClient, "your-custom-task-queue-name", worker.Options{})
 	// Register your Workflow Definitions with the Worker.
 	// Use the ReisterWorkflow or RegisterWorkflowWithOptions method for each Workflow registration.
-	yourWorker.RegisterWorkflow(YourWorkflowDefinition)
+	yourWorker.RegisterWorkflow(temp.YourWorkflowDefinition)
 	// Use RegisterOptions to set the name of the Workflow Type for example.
 	registerWFOptions := workflow.RegisterOptions{
 		Name: "JustAnotherWorkflow",
 	}
-	yourWorker.RegisterWorkflowWithOptions(YourSimpleWorkflowDefinition, registerWFOptions)
+	yourWorker.RegisterWorkflowWithOptions(temp.YourSimpleWorkflowDefinition, registerWFOptions)
 	// Register your Activity Definitons with the Worker.
 	// Use this technique for registering all Activities that are part of a struct and set the shared variable values.
 	message := "This could be a connection string or endpoint details"
 	number := 100
-	activities := &YourActivityObject{
+	activities := &temp.YourActivityObject{
 		Message: &message,
 		Number:  &number,
 	}
@@ -55,7 +58,7 @@ func main() {
 	registerAOptions := activity.RegisterOptions{
 		Name: "JustAnotherActivity",
 	}
-	yourWorker.RegisterActivityWithOptions(YourSimpleActivityDefinition, registerAOptions)
+	yourWorker.RegisterActivityWithOptions(temp.YourSimpleActivityDefinition, registerAOptions)
 	// Run the Worker
 	err = yourWorker.Run(worker.InterruptCh())
 	if err != nil {
